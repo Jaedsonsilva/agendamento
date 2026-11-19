@@ -18,3 +18,7 @@ Integração WhatsApp, webhooks para status de entrega, proteção antispam, con
 - GET `/api/catalog`
 - POST `/api/book`
 - GET `/api/track?protocol=...&phone=...`
+
+
+## Painel real e AVA
+Veja [ADMIN_E_IA.md](ADMIN_E_IA.md).
