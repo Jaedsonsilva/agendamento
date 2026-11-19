@@ -6,6 +6,10 @@
       "destination": "/api/index.js"
     },
     {
+      "source": "/painel",
+      "destination": "/painel.html"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
