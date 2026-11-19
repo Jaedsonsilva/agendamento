@@ -1,24 +1,31 @@
-# AVA Reserva — escolas e capela
+# AVA Reserva — agendamentos escolares
 
-Portal público: `/`. Painel administrativo real: `/painel`.
+Site público: `/`. Painel administrativo: `/painel`.
 
-O formulário de reservas aceita **WhatsApp com DDI**, exige consentimento, salva as solicitações no Supabase e verifica conflitos de sala, capela e equipamento. A API gera protocolo, mantém consulta pelo protocolo e telefone e registra notificações no banco para futura entrega. A versão administrativa em `/painel` é uma **simulação isolada** com dados fictícios no localStorage — não lê nem altera dados pessoais reais.
+## Funcionamento sem inteligência artificial
 
-## WhatsApp — entrega real opcional
-Integração de WhatsApp: **Evolution API (código aberto)**. Consulte [WHATSAPP_EVOLUTION.md](WHATSAPP_EVOLUTION.md). É necessário hospedar um gateway persistente à parte para enviar de verdade.\n\n## Banco
-Projeto Supabase Éden / agendamento (qdnfdfyfpgszfkjdzwwq), esquema privado `agendamento`. Acesso por RPC com chave publicável. Não expor `service_role` ao navegador.
+O solicitante escolhe escola, local ou equipamentos, data, horários e informa contato e consentimento. O servidor verifica conflitos de ambiente e estoque por regras determinísticas do Supabase. A solicitação é registrada com um protocolo; a aprovação ou recusa é feita manualmente pelo responsável no painel autenticado. O sistema revalida os conflitos na aprovação.
 
-## Pendências antes de divulgar para uso real
-Integração WhatsApp, webhooks para status de entrega, proteção antispam, contas administrativas autenticadas, cadastro de escolas reais e revisão de limites de uso e regras de privacidade. O painel demonstrativo não é controle real.
+O solicitante pode acompanhar o status usando protocolo e telefone. O painel permite cadastrar até três contatos responsáveis. Ao aprovar ou recusar, um link do WhatsApp abre com a mensagem pronta; o responsável precisa confirmar o envio. **Não há disparo automático de WhatsApp.**
 
-## Links
-- GET `/` formulário
-- GET `/painel` demonstração
-- GET `/api/health`
-- GET `/api/catalog`
-- POST `/api/book`
-- GET `/api/track?protocol=...&phone=...`
+## Infraestrutura
 
+- Supabase do **Projeto Éden**, ID `qdnfdfyfpgszfkjdzwwq`, esquema privado `agendamento`.
+- Vercel `agendamento` com `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` e `ADMIN_DB_TOKEN`.
+- O aplicativo não utiliza OpenAI, Rasa, LLM, agente inteligente ou treinamento de modelos. Nenhuma chamada de IA é executada.
 
-## Painel real e AVA
-Veja [ADMIN_E_IA.md](ADMIN_E_IA.md).
+## Segurança e operação
+
+A senha administrativa atual deve ser substituída por uma forte antes de usar dados reais. Existe uma conta administrativa compartilhada, sem RBAC por escola; revisar LGPD, antispam e limitação persistente de tentativas. As escolas existentes ainda são demonstrativas.
+
+## Endpoints
+
+- `GET /api/health`
+- `GET /api/catalog`
+- `GET /api/availability?school_id=...&date=...&start=...&end=...`
+- `POST /api/book`
+- `GET /api/track?protocol=...&phone=...`
+- `GET /api/admin-session` e `POST /api/admin-login`
+- `GET /api/admin-data`, `POST /api/admin-decision`, `POST /api/admin-contacts` (sessão obrigatória)
+
+A rota `/api/ava` foi desativada. As variáveis `OPENAI_API_KEY`/`OPENAI_MODEL`, se ainda presentes na Vercel, não são utilizadas pelo código.
