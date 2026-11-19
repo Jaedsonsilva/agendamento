@@ -2,7 +2,7 @@ import {createHmac,timingSafeEqual} from 'node:crypto';
 const adminConfigured=()=>!!(process.env.ADMIN_PASSWORD&&process.env.ADMIN_SESSION_SECRET&&process.env.ADMIN_DB_TOKEN);
 const sign=v=>createHmac('sha256',process.env.ADMIN_SESSION_SECRET).update('AVA1.'+v).digest('hex');
 const equal=(a,b)=>{const x=Buffer.from(String(a||'')),y=Buffer.from(String(b||''));return x.length===y.length&&timingSafeEqual(x,y);};
-const signedIn=req=>{if(!adminConfigured())return false;const v=String(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('ava_admin='))?.slice(10)||'';const m=/^([0-9]{13})\.([a-f0-9]{64})$/.exec(v);return !!m&&Number(m[1])>Date.now()&&Number(m[1])<Date.now()+86400000&&equal(m[2],sign(m[1]));};
+const signedIn=req=>{if(!adminConfigured())return false;const v=String(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('ava_admin='))?.slice('ava_admin='.length)||'';const m=/^([0-9]{13})\.([a-f0-9]{64})$/.exec(v);return !!m&&Number(m[1])>Date.now()&&Number(m[1])<Date.now()+86400000&&equal(m[2],sign(m[1]));};
 const sameOrigin=req=>!req.headers.origin||req.headers.origin==='https://'+req.headers.host;
 const loginAttempts=new Map(),faqAttempts=new Map();
 async function askOpenai(instructions,input){
@@ -38,6 +38,10 @@ export default async function handler(req,res){
  if(path.startsWith('admin-')){
   if(!signedIn(req))return respond(res,401,{error:'Acesso restrito: digite a senha.'});
   if(req.method==='POST'&&!sameOrigin(req))return respond(res,403,{error:'Origem não permitida'});
+ }
+ if(path.startsWith('admin-')){
+  if(!signedIn(req))return respond(res,401,{error:'Autenticação administrativa necessária'});
+  if(req.method==='POST'&&!sameOrigin(req))return respond(res,403,{error:'Origem não autorizada'});
  }
  try{
   if(path==='catalog'&&req.method==='GET'){const data=await rpc('ava_reserva_catalogo');return respond(res,200,{ready:true,schools:data.schools||[],spaces:data.spaces||[],equipment:data.equipment||[]});}
