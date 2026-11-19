@@ -33,10 +33,6 @@ export default async function handler(req,res){
   if(!signedIn(req))return respond(res,401,{error:'Acesso restrito: digite a senha.'});
   if(req.method==='POST'&&!sameOrigin(req))return respond(res,403,{error:'Origem não permitida'});
  }
- if(path.startsWith('admin-')){
-  if(!signedIn(req))return respond(res,401,{error:'Autenticação administrativa necessária'});
-  if(req.method==='POST'&&!sameOrigin(req))return respond(res,403,{error:'Origem não autorizada'});
- }
  try{
   if(path==='catalog'&&req.method==='GET'){const data=await rpc('ava_reserva_catalogo');return respond(res,200,{ready:true,schools:data.schools||[],spaces:data.spaces||[],equipment:data.equipment||[]});}
   if(path==='book'&&req.method==='POST'){
@@ -50,6 +46,19 @@ export default async function handler(req,res){
 
   }
   if(path==='admin-data'&&req.method==='GET'){const d=await rpc('ava_reserva_admin_painel',{p_token:process.env.ADMIN_DB_TOKEN});return respond(res,d.error?403:200,d);}
+  if(path==='admin-catalog'&&req.method==='GET'){
+   const d=await rpc('ava_reserva_admin_catalogo',{p_token:process.env.ADMIN_DB_TOKEN});
+   return respond(res,d.error?403:200,d);
+  }
+  if(path==='admin-manage'&&req.method==='POST'){
+   const b=req.body||{};
+   if(!['escola','ambiente','equipamento'].includes(b.type)||
+      !['criar','editar','copiar','arquivar','reativar'].includes(b.action)||
+      !b.data||typeof b.data!=='object'||Array.isArray(b.data)||JSON.stringify(b).length>1600)
+    return respond(res,400,{error:'Dados inválidos para atualização do cadastro'});
+   const d=await rpc('ava_reserva_admin_gerenciar',{p_token:process.env.ADMIN_DB_TOKEN,p_tipo:b.type,p_acao:b.action,p_dados:b.data});
+   return respond(res,d.error?400:200,d);
+  }
   if(path==='admin-contacts'&&req.method==='POST'){
    const values=req.body?.contacts;
    if(!Array.isArray(values)||values.length!==3||values.some(n=>typeof n!=='string'||(n&&!/^\+[1-9][0-9]{9,14}$/.test(n))))return respond(res,400,{error:'Três campos com número completo, por exemplo +5582999999999'});
