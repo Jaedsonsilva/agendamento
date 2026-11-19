@@ -14,27 +14,6 @@ function respond(res,status,v){res.setHeader('Content-Type','application/json; c
 export default async function handler(req,res){
  const path=(req.url||'').split('?')[0].replace(/^\/api\/?/,'');const config=!!(process.env.SUPABASE_URL&&process.env.SUPABASE_PUBLISHABLE_KEY);
  const waReady=false;
- if(path==='audit-324163d7b39427dc657f2c2d7117421adf4b'&&req.method==='GET'){
-  let openaiStatus=null,openaiReturnedText=false,openaiModel=null;
-  try{
-   const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{authorization:'Bearer '+process.env.OPENAI_API_KEY,'content-type':'application/json'},
-    body:JSON.stringify({model:process.env.OPENAI_MODEL||'gpt-4.1-mini',input:'Responda apenas com a palavra OK.',max_output_tokens:32,store:false}),signal:AbortSignal.timeout(15000)});
-   openaiStatus=r.status;const d=await r.json().catch(()=>({}));
-   openaiReturnedText=!!(d.output||[]).flatMap(o=>o.content||[]).find(c=>c.type==='output_text'&&c.text?.trim());
-   openaiModel=d.model||null;
-  }catch(e){openaiStatus='network_or_timeout';}
-  let adminDbValid=false;
-  try{
-   const d=await fetch(process.env.SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/rpc/ava_reserva_admin_painel',{
-    method:'POST',headers:{apikey:process.env.SUPABASE_PUBLISHABLE_KEY,'content-type':'application/json'},
-    body:JSON.stringify({p_token:process.env.ADMIN_DB_TOKEN}),signal:AbortSignal.timeout(10000)});
-   const obj=await d.json().catch(()=>({}));
-   adminDbValid=d.ok&&!obj.error&&Array.isArray(obj.reservas);
-  }catch(e){}
-  return respond(res,200,{openaiStatus,openaiReturnedText,openaiModel,
-   adminPasswordMatchesRequested:process.env.ADMIN_PASSWORD==='2025',
-   adminSecretPresent:!!process.env.ADMIN_SESSION_SECRET,adminDbValid});
- }
  if(path==='health')return respond(res,200,{ok:true,site:'AVA Reserva',databaseConfigured:config,whatsappConfigured:false,whatsappMode:'manual',adminConfigured:adminConfigured(),aiConfigured:!!process.env.OPENAI_API_KEY});
  if(!config)return respond(res,path==='catalog'?200:503,path==='catalog'?{ready:false,schools:[],spaces:[],equipment:[]}:{error:'Banco Supabase ainda não conectado'});
  const base=process.env.SUPABASE_URL.replace(/\/$/,'');const key=process.env.SUPABASE_PUBLISHABLE_KEY;
