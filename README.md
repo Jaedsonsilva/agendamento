@@ -1,6 +1,6 @@
 # AVA Reserva — escolas e capela
 
-Portal público: `/`. Painel demonstrativo: `/painel`.
+Portal público: `/`. Painel administrativo real: `/painel`.
 
 O formulário de reservas aceita **WhatsApp com DDI**, exige consentimento, salva as solicitações no Supabase e verifica conflitos de sala, capela e equipamento. A API gera protocolo, mantém consulta pelo protocolo e telefone e registra notificações no banco para futura entrega. A versão administrativa em `/painel` é uma **simulação isolada** com dados fictícios no localStorage — não lê nem altera dados pessoais reais.
 
