@@ -14,33 +14,6 @@ function respond(res,status,v){res.setHeader('Content-Type','application/json; c
 export default async function handler(req,res){
  const path=(req.url||'').split('?')[0].replace(/^\/api\/?/,'');const config=!!(process.env.SUPABASE_URL&&process.env.SUPABASE_PUBLISHABLE_KEY);
  const waReady=false;
- if(path==='audit-f9908161665d189484ed737461feb569c036'&&req.method==='GET'){
-  const host=req.headers.host;
-  if(!/^[a-z0-9.-]+$/i.test(host||''))return respond(res,400,{error:'host'});
-  const base='https://'+host;
-  let loginStatus=0,sessionStatus=0,adminDataStatus=0,adminDataShape=false,logoutStatus=0,afterLogoutStatus=0;
-  try{
-   const login=await fetch(base+'/api/admin-login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:'2025'}),redirect:'manual',signal:AbortSignal.timeout(12000)});
-   loginStatus=login.status;
-   const cookie=login.headers.get('set-cookie')?.split(';')[0]||'';
-   if(cookie.startsWith('ava_admin=')){
-    const session=await fetch(base+'/api/admin-session',{headers:{cookie},signal:AbortSignal.timeout(12000)});
-    sessionStatus=session.status;
-    const s=await session.json().catch(()=>({}));
-    if(s.authenticated===true){
-     const d=await fetch(base+'/api/admin-data',{headers:{cookie},signal:AbortSignal.timeout(12000)});
-     adminDataStatus=d.status;const j=await d.json().catch(()=>({}));
-     adminDataShape=Array.isArray(j.reservas)&&Array.isArray(j.contatos);
-    }
-    const logout=await fetch(base+'/api/admin-logout',{method:'POST',headers:{cookie},signal:AbortSignal.timeout(12000)});
-    logoutStatus=logout.status;
-    const newCookie=logout.headers.get('set-cookie')?.split(';')[0]||'';
-    const after=await fetch(base+'/api/admin-session',{headers:{cookie:newCookie},signal:AbortSignal.timeout(12000)});
-    afterLogoutStatus=after.status;
-   }
-  }catch(e){return respond(res,200,{loginStatus,sessionStatus,adminDataStatus,adminDataShape,logoutStatus,afterLogoutStatus,networkError:true});}
-  return respond(res,200,{loginStatus,sessionStatus,adminDataStatus,adminDataShape,logoutStatus,afterLogoutStatus});
- }
  if(path==='health')return respond(res,200,{ok:true,site:'AVA Reserva',databaseConfigured:config,whatsappConfigured:false,whatsappMode:'manual',adminConfigured:adminConfigured(),aiConfigured:!!process.env.OPENAI_API_KEY});
  if(!config)return respond(res,path==='catalog'?200:503,path==='catalog'?{ready:false,schools:[],spaces:[],equipment:[]}:{error:'Banco Supabase ainda não conectado'});
  const base=process.env.SUPABASE_URL.replace(/\/$/,'');const key=process.env.SUPABASE_PUBLISHABLE_KEY;
