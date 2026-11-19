@@ -1,9 +1,23 @@
-# AVA Reserva — Agendamento escolar
+# AVA Reserva — agendamento escolar
 
-Portal público para solicitação de ambientes (inclusive capela) e equipamentos por escola. Código de frontend publicado e API inicial de catálogo. **Reservas reais ficam bloqueadas até que o backend de reserva atômica e notificações estejam implementados e validados.**
+## Produção (Vercel + Supabase)
+Site público no projeto Vercel **agendamento**. Formulário público sem login. Banco no Supabase Edumind OS, schema privado **agendamento**.
 
-## Vercel
-Configurar no projeto `agendamento` as variáveis de ambiente do servidor `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`. Não colocar a chave `service_role` no frontend, código ou Git. Expor o schema `agendamento` na Data API apenas com acesso autorizado; todas as tabelas têm RLS habilitado e privilégios públicos revogados. Idealmente, migrar a comunicação para Postgres direto ou RPC restrita.
+O código inclui cadastro por escola, seleção de capela/sala/equipamentos, reserva automática (procedimento SQL atômico com advisory lock por escola), bloqueio de conflitos de horário e estoque, consulta via protocolo e e-mail, persistência das solicitações e fila de notificações.
 
-## Faltante
-API de reserva com prevenção de concorrência, notificação Resend, Turnstile, cadastro administrativo autenticado e testes em produção. Não prometer agendamentos reais até concluir.
+**Pendências:** o envio de e-mails Resend ainda NÃO está ativo. Mensagens são registradas na tabela agendamento.notificacoes como pendentes. Falta configurar um provedor de e-mail verificando um domínio; também é recomendado ativar proteção antispam (Turnstile). Não há tela administrativa para cadastrar escolas e equipamentos no frontend; por enquanto os cadastros são realizados no Supabase com acesso privilegiado.
+
+As unidades **Escola Demonstrativa A/B** e seus recursos são dados ilustrativos para teste e devem ser substituídos pelos cadastros reais antes da divulgação. Nunca coloque credenciais privadas no HTML ou no GitHub.
+
+## Variáveis Vercel
+SUPABASE_URL = URL do projeto
+SUPABASE_PUBLISHABLE_KEY = chave publicável do projeto
+
+A API utiliza apenas funções RPC com privilégios limitados. O schema privado e os dados pessoais não são expostos por leitura pública direta.
+
+## Rotas
+- GET /  — interface
+- GET /api/health
+- GET /api/catalog
+- POST /api/book
+- GET /api/track?protocol=...&email=...
