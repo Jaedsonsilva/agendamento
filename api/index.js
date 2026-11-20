@@ -69,12 +69,6 @@ export default async function handler(req,res){
    if(!/^[a-f0-9-]{36}$/i.test(v.id||'')||!['aprovar','recusar'].includes(v.action)||typeof v.reason!=='string'||v.reason.length>600)return respond(res,400,{error:'Decisão inválida'});
    const d=await rpc('ava_reserva_admin_decidir',{p_token:process.env.ADMIN_DB_TOKEN,p_reserva_id:v.id,p_acao:v.action,p_motivo:v.reason});return respond(res,d.error?409:200,d);
   }
-  if(path==='occupied'&&req.method==='GET'){
-   const school=new URL(req.url,'https://ava.local').searchParams.get('school_id');
-   if(!/^[0-9a-f-]{36}$/i.test(school||''))return respond(res,400,{error:'Selecione uma escola válida'});
-   const d=await rpc('ava_reserva_agenda_ocupada',{p_school_id:school});
-   return respond(res,d.error?400:200,d);
-  }
   if(path==='availability'&&req.method==='GET'){
    const q=new URL(req.url,'https://ava.local').searchParams;
    const school=q.get('school_id'),date=q.get('date'),start=q.get('start'),end=q.get('end');
