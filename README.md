@@ -16,7 +16,7 @@ O solicitante pode acompanhar o status usando protocolo e telefone. O painel per
 
 ## Segurança e operação
 
-A senha administrativa atual deve ser substituída por uma forte antes de usar dados reais. Existe uma conta administrativa compartilhada, sem RBAC por escola; revisar LGPD, antispam e limitação persistente de tentativas. As escolas existentes ainda são demonstrativas.
+A senha administrativa atual deve ser substituída por uma forte antes de usar dados reais. Existe uma conta administrativa compartilhada, sem RBAC por escola; revisar LGPD, antispam e limitação persistente de tentativas. As escolas demonstrativas foram removidas. O banco inicia vazio; o administrador deve cadastrar escolas, ambientes e equipamentos reais antes do uso.
 
 ## Endpoints
 
@@ -29,3 +29,11 @@ A senha administrativa atual deve ser substituída por uma forte antes de usar d
 - `GET /api/admin-data`, `POST /api/admin-decision`, `POST /api/admin-contacts` (sessão obrigatória)
 
 A rota `/api/ava` foi desativada. As variáveis `OPENAI_API_KEY`/`OPENAI_MODEL`, se ainda presentes na Vercel, não são utilizadas pelo código.
+
+## Cadastro de recursos em produção
+
+No painel em `/painel`, a aba **Escolas** permite criar, renomear, arquivar ou reativar escolas. A aba **Capela e salas** permite criar, editar, arquivar, reativar e **copiar ambientes para outras escolas**. A aba **Equipamentos** permite cadastrar, alterar quantidade, copiar, arquivar e reativar equipamentos.
+
+O calendário mostra solicitações armazenadas no Supabase; clicar em um dia com pedidos abre a lista filtrada. A sessão administrativa continua após atualizar a página até expirar ou até o usuário clicar em **Sair**, que remove o cookie de autenticação.
+
+Ao remover cadastros de uso diário utilize **Arquivar**; isso preserva o histórico de reservas. O envio de mensagens pelo WhatsApp é manual. A senha administrativa temporária deve ser trocada antes de cadastrar pessoas reais.
